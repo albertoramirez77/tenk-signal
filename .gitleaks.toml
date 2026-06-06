@@ -1,0 +1,28 @@
+# gitleaks config — runs in pre-commit and in CI on every PR.
+# Defaults catch generic high-entropy strings, AWS keys, GitHub tokens, etc.
+# We extend with a couple of project-specific patterns and allowlist the
+# documented placeholders in .env.example.
+
+title = "TenK Signal gitleaks config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "anthropic-api-key"
+description = "Anthropic API key"
+regex = '''sk-ant-[a-zA-Z0-9_-]{20,}'''
+tags = ["key", "anthropic"]
+
+[allowlist]
+description = "Documented placeholders, lockfiles, fixtures"
+paths = [
+  '''^\.env\.example$''',
+  '''^backend/uv\.lock$''',
+  '''^frontend/package-lock\.json$''',
+  '''^backend/tests/fixtures/''',
+]
+regexes = [
+  '''albertoramirezaguiar7@gmail\.com''',
+  '''postgres:postgres@localhost''',
+]

@@ -1,0 +1,12 @@
+{
+  "ticker": "JNJ",
+  "cik": "0000200406",
+  "form_type": "10-K",
+  "accession_no": "0000200406-26-000016",
+  "filed_at": "2026-02-11T00:00:00+00:00",
+  "period_end": "2025-12-28",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/200406/000020040626000016/jnj-20251228.htm",
+  "text_sha256": "3ffa2fea25bdf9ba29e13917a995335d739d542e8a627eeaaf6bf3672f5fd725",
+  "section_extraction_mode": "mdna_riskfactors",
+  "text_len": 60000
+}

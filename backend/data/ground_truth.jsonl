@@ -1,0 +1,17 @@
+# Ground-truth labels for the eval set.
+# WARNING: these labels are HAND-CRAFTED PLACEHOLDERS for testing
+# the eval pipeline. They are NOT human-validated against the actual
+# filing content. Replace each row with a real human label before
+# trusting the eval metrics shown on the dashboard.
+#
+# Schema (one JSON object per line):
+#   text_sha256: 64-hex content hash of the parsed filing text
+#   true_guidance: one of 'raised', 'maintained', 'lowered'
+#   true_sentiment: float in [-1, 1]
+#
+{"text_sha256": "85b36cd2ef0001163133ecea207456243cdca6f1c2eeca7e7f2fded24545a794", "true_guidance": "raised", "true_sentiment": 0.45}
+{"text_sha256": "3ffa2fea25bdf9ba29e13917a995335d739d542e8a627eeaaf6bf3672f5fd725", "true_guidance": "maintained", "true_sentiment": 0.15}
+{"text_sha256": "0b8b476545fafbfc5751d6cf16b22918cffb0e818b98b4f4d82f534c1b03bb4d", "true_guidance": "maintained", "true_sentiment": 0.1}
+{"text_sha256": "843363c7234dfbbe5c0e7bad78762f7d8f283efcfc39bac9ed82686d78562b4f", "true_guidance": "raised", "true_sentiment": 0.3}
+{"text_sha256": "d5a6237fde70693cddb4d6a63d3de913fdbd5aff2ad1fc1c759e1edc27fa3503", "true_guidance": "raised", "true_sentiment": 0.55}
+{"text_sha256": "ce0acea5be62df1d9b4df7ae21f39ec5408a1478189f373695bb632781ab30a2", "true_guidance": "lowered", "true_sentiment": -0.25}

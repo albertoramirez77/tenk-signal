@@ -1,0 +1,74 @@
+name: backend
+
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend.yml"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tenk_signal_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/tenk_signal_test
+      ANTHROPIC_API_KEY: test-not-used
+      EDGAR_USER_AGENT: ci@example.com
+      APP_API_KEY_ADMIN: ci-admin-key-must-be-long-enough-to-pass-validation
+      APP_API_KEY_VIEWER: ci-viewer-key-must-be-long-enough-to-pass-validation
+      PROMPT_VERSION: v1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.x"
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: uv sync --frozen --all-extras
+
+      - name: Ruff lint
+        working-directory: backend
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        working-directory: backend
+        run: uv run ruff format --check .
+
+      - name: mypy
+        working-directory: backend
+        run: uv run mypy tenk_signal
+
+      - name: pytest
+        working-directory: backend
+        run: uv run pytest -q --strict-markers
+
+      - name: pip-audit
+        working-directory: backend
+        run: uv run pip-audit --strict --ignore-vuln GHSA-0000-0000-0000 || uv run pip-audit --strict
+
+      - name: Build Docker image
+        run: docker build -t tenk-signal-backend:ci backend

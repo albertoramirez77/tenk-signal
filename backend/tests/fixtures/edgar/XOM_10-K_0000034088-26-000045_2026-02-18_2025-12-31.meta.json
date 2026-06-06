@@ -1,0 +1,12 @@
+{
+  "ticker": "XOM",
+  "cik": "0000034088",
+  "form_type": "10-K",
+  "accession_no": "0000034088-26-000045",
+  "filed_at": "2026-02-18T00:00:00+00:00",
+  "period_end": "2025-12-31",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/34088/000003408826000045/xom-20251231.htm",
+  "text_sha256": "ce0acea5be62df1d9b4df7ae21f39ec5408a1478189f373695bb632781ab30a2",
+  "section_extraction_mode": "mdna_riskfactors",
+  "text_len": 36909
+}

@@ -1,0 +1,12 @@
+{
+  "ticker": "KO",
+  "cik": "0000021344",
+  "form_type": "10-K",
+  "accession_no": "0001628280-26-010047",
+  "filed_at": "2026-02-20T00:00:00+00:00",
+  "period_end": "2025-12-31",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/21344/000162828026010047/ko-20251231.htm",
+  "text_sha256": "843363c7234dfbbe5c0e7bad78762f7d8f283efcfc39bac9ed82686d78562b4f",
+  "section_extraction_mode": "mdna_riskfactors",
+  "text_len": 60000
+}

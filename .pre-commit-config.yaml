@@ -1,0 +1,56 @@
+# Run: `pre-commit install` once after cloning, then it runs on every commit.
+# CI runs the same hooks for parity.
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ["--maxkb=512"]
+      - id: check-merge-conflict
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: ["--fix", "--exit-non-zero-on-fix"]
+        files: ^backend/
+      - id: ruff-format
+        files: ^backend/
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy
+        files: ^backend/tenk_signal/
+        additional_dependencies:
+          - pydantic>=2.7
+          - pydantic-settings>=2.4
+        args: ["--config-file=backend/pyproject.toml"]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+        args: ["--config=.gitleaks.toml"]
+
+  - repo: local
+    hooks:
+      - id: frontend-eslint
+        name: frontend eslint (changed files)
+        entry: bash -c 'cd frontend && [ -d node_modules ] && npx eslint --max-warnings=0 "$@" || echo "skipped (node_modules not installed)"' --
+        language: system
+        files: ^frontend/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: true
+
+      # Hard rule: the viewer API key must only be referenced from
+      # frontend/src/lib/server-api.ts. Any other reference is a leak.
+      - id: viewer-key-server-only
+        name: viewer key must stay server-side
+        entry: bash -c 'matches=$(grep -RInE "APP_API_KEY_VIEWER(_SERVER)?" frontend/src 2>/dev/null | grep -v "^frontend/src/lib/server-api\.ts:" || true); if [ -n "$matches" ]; then echo "Viewer API key referenced outside lib/server-api.ts:"; echo "$matches"; exit 1; fi'
+        language: system
+        pass_filenames: false
+        always_run: true

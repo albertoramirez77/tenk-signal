@@ -1,0 +1,33 @@
+# --- Python / generic ---
+__pycache__/
+*.pyc
+.DS_Store
+.claude/settings.local.json
+
+# --- backend ---
+backend/.venv/
+backend/.pytest_cache/
+backend/.ruff_cache/
+backend/.mypy_cache/
+backend/htmlcov/
+backend/.coverage
+backend/*.egg-info/
+
+# --- frontend ---
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+frontend/tsconfig.tsbuildinfo
+
+# --- secrets ---
+.env
+.env.*
+!.env.example
+
+# --- editor / OS ---
+.idea/
+.vscode/
+Thumbs.db

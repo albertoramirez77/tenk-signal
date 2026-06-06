@@ -1,0 +1,63 @@
+name: migrations
+
+on:
+  pull_request:
+    paths:
+      - "backend/alembic/**"
+      - "backend/tenk_signal/models.py"
+      - "backend/tenk_signal/db.py"
+      - ".github/workflows/migrations.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backend/alembic/**"
+      - "backend/tenk_signal/models.py"
+      - ".github/workflows/migrations.yml"
+
+jobs:
+  up-down:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tenk_signal_migrations
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/tenk_signal_migrations
+      # Alembic env.py uses a sync driver; provide a sibling URL.
+      DATABASE_URL_SYNC: postgresql+psycopg://postgres:postgres@localhost:5432/tenk_signal_migrations
+      ANTHROPIC_API_KEY: test-not-used
+      EDGAR_USER_AGENT: ci@example.com
+      APP_API_KEY_ADMIN: ci-admin-key-must-be-long-enough-to-pass-validation
+      APP_API_KEY_VIEWER: ci-viewer-key-must-be-long-enough-to-pass-validation
+      PROMPT_VERSION: v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.4.x"
+      - run: uv python install 3.12
+      - name: Install backend deps
+        working-directory: backend
+        run: uv sync --frozen --all-extras
+
+      - name: alembic upgrade head
+        working-directory: backend
+        run: uv run alembic upgrade head
+
+      - name: alembic downgrade base (must reverse cleanly)
+        working-directory: backend
+        run: uv run alembic downgrade base
+
+      - name: alembic upgrade head again (idempotent)
+        working-directory: backend
+        run: uv run alembic upgrade head

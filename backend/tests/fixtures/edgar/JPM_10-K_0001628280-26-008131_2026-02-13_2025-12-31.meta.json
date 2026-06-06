@@ -1,0 +1,12 @@
+{
+  "ticker": "JPM",
+  "cik": "0000019617",
+  "form_type": "10-K",
+  "accession_no": "0001628280-26-008131",
+  "filed_at": "2026-02-13T00:00:00+00:00",
+  "period_end": "2025-12-31",
+  "source_url": "https://www.sec.gov/Archives/edgar/data/19617/000162828026008131/jpm-20251231.htm",
+  "text_sha256": "0b8b476545fafbfc5751d6cf16b22918cffb0e818b98b4f4d82f534c1b03bb4d",
+  "section_extraction_mode": "mdna_riskfactors",
+  "text_len": 60000
+}
