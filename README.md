@@ -42,36 +42,57 @@ data/      ground_truth.jsonl (placeholder labels — see warning in file)
 ```bash
 cd backend
 uv sync --all-extras
-cp ../.env.example ../.env             # then edit ../.env with real values
-uv run alembic upgrade head            # applies migrations
-uv run pytest -q                       # 71 unit tests, ~0.5s
+cp ../.env.example ../.env
 ```
+
+Now edit `../.env` with real values. Then:
+
+```bash
+set -a; source ../.env; set +a
+uv run alembic upgrade head
+uv run pytest -q
+```
+
+> **Important when editing `.env`**: any value with spaces must be quoted
+> (e.g. `EDGAR_USER_AGENT="TenK Signal me@example.com"`). The shipped
+> `.env.example` already does this. An unquoted space causes `source` to
+> fail silently for every variable below the bad line.
 
 ### 3. Frontend
 
 ```bash
 cd frontend
 npm install
-npm run typecheck && npm run test
+npm run typecheck
+npm run test
 ```
 
 ### 4. Clickable demo (no Anthropic credits required)
 
+In `backend/` with `.env` loaded and Postgres up:
+
 ```bash
-# In backend/ with .env loaded and Postgres up:
 uv run python -m scripts.seed_demo
-
-# Start the API:
-uv run uvicorn tenk_signal.main:app --reload
-
-# In another terminal, start the dashboard:
-cd frontend
-BACKEND_API_URL=http://localhost:8000 \
-  APP_API_KEY_VIEWER_SERVER=$APP_API_KEY_VIEWER \
-  npm run dev
-
-# Open http://localhost:3000 — AAPL equity curve + signals + evals.
+uv run uvicorn tenk_signal.main:app --reload --port 8000
 ```
+
+In a second terminal, start the dashboard:
+
+```bash
+cd frontend
+set -a; source ../.env; set +a
+BACKEND_API_URL=http://localhost:8000 \
+APP_API_KEY_VIEWER_SERVER="$APP_API_KEY_VIEWER" \
+  npm run dev
+```
+
+Open <http://localhost:3000> — you'll see the AAPL equity curve, eval
+metrics, and signals table.
+
+> **Don't put `#` comments after commands in zsh.** macOS zsh doesn't
+> treat `#` as a comment in interactive mode by default, so
+> `npm install # one time` tries to install packages literally named
+> `#`, `one`, and `time`. Put comments on their own lines.
 
 ### 5. Optional: one real Anthropic call
 
