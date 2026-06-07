@@ -106,20 +106,20 @@ async def test_full_pipeline(app_with_fixtures, clean_db, admin_key, viewer_key)
             json={"tickers": ["AAPL"], "forms": ["10-K"], "limit_per_ticker": 1},
             headers=admin,
         )
-    assert r.status_code == 200, r.text
-    ingest_result = r.json()
-    assert ingest_result["filings_ingested"] == 1
-    assert ingest_result["filings_skipped_existing"] == 0
-    assert ingest_result["prices_rows_upserted"] > 0
+        assert r.status_code == 200, r.text
+        ingest_result = r.json()
+        assert ingest_result["filings_ingested"] == 1
+        assert ingest_result["filings_skipped_existing"] == 0
+        assert ingest_result["prices_rows_upserted"] > 0
 
-    # Re-ingest is idempotent.
-    r2 = await client.post(
-        "/ingest",
-        json={"tickers": ["AAPL"], "forms": ["10-K"], "limit_per_ticker": 1},
-        headers=admin,
-    )
-    assert r2.status_code == 200
-    assert r2.json()["filings_skipped_existing"] == 1
+        # Re-ingest is idempotent.
+        r2 = await client.post(
+            "/ingest",
+            json={"tickers": ["AAPL"], "forms": ["10-K"], "limit_per_ticker": 1},
+            headers=admin,
+        )
+        assert r2.status_code == 200
+        assert r2.json()["filings_skipped_existing"] == 1
 
     # ---- 2) extract -------------------------------------------------------
     r = await client.post("/extract", json={"all_pending": True}, headers=admin)
