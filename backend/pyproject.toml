@@ -3,7 +3,6 @@ name = "tenk-signal"
 version = "0.1.0"
 description = "Alpha-from-text pipeline: SEC filings → LLM extraction → backtest"
 requires-python = ">=3.12"
-readme = "../README.md"
 
 dependencies = [
     "fastapi>=0.115.0",
