@@ -7,7 +7,6 @@ exposes Prom output, and request-id middleware echoes the header.
 from __future__ import annotations
 
 from fastapi.testclient import TestClient
-
 from tenk_signal.main import create_app
 
 
