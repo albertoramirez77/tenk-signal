@@ -7,6 +7,7 @@ SDK is invoked.
 
 from __future__ import annotations
 
+import asyncio
 import os
 import sys
 from collections.abc import Iterator
@@ -59,3 +60,10 @@ def admin_key() -> str:
 @pytest.fixture
 def viewer_key() -> str:
     return os.environ["APP_API_KEY_VIEWER"]
+
+
+def pytest_unconfigure(config: pytest.Config) -> None:
+    """Dispose the async SQLAlchemy engine after pytest finishes."""
+    from tenk_signal.db import dispose_engine
+
+    asyncio.run(dispose_engine())

@@ -9,6 +9,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from tenk_signal.config import get_settings
+from tenk_signal.db import dispose_engine
 from tenk_signal.logging import configure_logging, get_logger
 from tenk_signal.middleware import BodySizeLimitMiddleware, RequestIDMiddleware
 from tenk_signal.observability import init_prometheus, init_sentry
@@ -49,6 +50,7 @@ def create_app() -> FastAPI:
     app.include_router(evals.router)
 
     init_prometheus(app)  # mounts /metrics
+    app.add_event_handler("shutdown", dispose_engine)
 
     return app
 
