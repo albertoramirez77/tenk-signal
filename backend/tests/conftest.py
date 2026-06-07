@@ -7,7 +7,6 @@ SDK is invoked.
 
 from __future__ import annotations
 
-import asyncio
 import os
 import sys
 from collections.abc import Iterator
