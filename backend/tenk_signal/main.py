@@ -6,6 +6,8 @@ configures logging, wires middleware in the right order, and mounts routers.
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from tenk_signal.config import get_settings
@@ -29,11 +31,17 @@ def create_app() -> FastAPI:
         prompt_version=settings.prompt_version,
     )
 
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        yield
+        await dispose_engine()
+
     app = FastAPI(
         title="TenK Signal",
         version="0.1.0",
         docs_url="/docs" if settings.environment != "prod" else None,
         redoc_url=None,
+        lifespan=lifespan,
     )
 
     # Middleware runs in reverse-add order. We want:
@@ -50,10 +58,6 @@ def create_app() -> FastAPI:
     app.include_router(evals.router)
 
     init_prometheus(app)  # mounts /metrics
-
-    @app.on_event("shutdown")
-    async def _shutdown() -> None:
-        await dispose_engine()
 
     return app
 
