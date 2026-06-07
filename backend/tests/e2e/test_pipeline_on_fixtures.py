@@ -50,10 +50,9 @@ FIXTURES = Path(__file__).parent.parent / "fixtures"
 @pytest.fixture(scope="module")
 def app_with_fixtures():  # type: ignore[no-untyped-def]
     """Boot the app and override service deps with fixture clients."""
-    from tenk_signal.main import create_app
-
     from tenk_signal.config import get_settings
     from tenk_signal.deps import get_edgar, get_extractor, get_prices
+    from tenk_signal.main import create_app
     from tenk_signal.services.edgar import FixtureEdgarClient
     from tenk_signal.services.extractor import FixtureExtractor
     from tenk_signal.services.prices import FixturePriceClient
