@@ -17,7 +17,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import pytest
-from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from sqlalchemy import text
 
 
@@ -86,16 +86,16 @@ async def clean_db():  # type: ignore[no-untyped-def]
 
 @pytest.mark.asyncio
 async def test_full_pipeline(app_with_fixtures, clean_db, admin_key, viewer_key) -> None:  # type: ignore[no-untyped-def]
-    client = TestClient(app_with_fixtures)
     admin = {"X-API-Key": admin_key}
     viewer = {"X-API-Key": viewer_key}
 
-    # ---- 1) ingest the AAPL fixture ---------------------------------------
-    r = client.post(
-        "/ingest",
-        json={"tickers": ["AAPL"], "forms": ["10-K"], "limit_per_ticker": 1},
-        headers=admin,
-    )
+    async with AsyncClient(app=app_with_fixtures, base_url="http://testserver") as client:
+        # ---- 1) ingest the AAPL fixture ---------------------------------------
+        r = await client.post(
+            "/ingest",
+            json={"tickers": ["AAPL"], "forms": ["10-K"], "limit_per_ticker": 1},
+            headers=admin,
+        )
     assert r.status_code == 200, r.text
     ingest_result = r.json()
     assert ingest_result["filings_ingested"] == 1
@@ -103,7 +103,7 @@ async def test_full_pipeline(app_with_fixtures, clean_db, admin_key, viewer_key)
     assert ingest_result["prices_rows_upserted"] > 0
 
     # Re-ingest is idempotent.
-    r2 = client.post(
+    r2 = await client.post(
         "/ingest",
         json={"tickers": ["AAPL"], "forms": ["10-K"], "limit_per_ticker": 1},
         headers=admin,
@@ -112,7 +112,7 @@ async def test_full_pipeline(app_with_fixtures, clean_db, admin_key, viewer_key)
     assert r2.json()["filings_skipped_existing"] == 1
 
     # ---- 2) extract -------------------------------------------------------
-    r = client.post("/extract", json={"all_pending": True}, headers=admin)
+    r = await client.post("/extract", json={"all_pending": True}, headers=admin)
     assert r.status_code == 200, r.text
     extract_result = r.json()
     assert extract_result["extracted"] == 1
@@ -120,7 +120,7 @@ async def test_full_pipeline(app_with_fixtures, clean_db, admin_key, viewer_key)
     assert extract_result["failed"] == 0
 
     # Second extract: the UNIQUE constraint must turn this into a cache hit.
-    r = client.post("/extract", json={"all_pending": True}, headers=admin)
+    r = await client.post("/extract", json={"all_pending": True}, headers=admin)
     # all_pending now returns zero filings because every Filing has an
     # Extraction; the cache constraint isn't exercised here but a re-extract
     # of the same filing_id is.
@@ -128,7 +128,7 @@ async def test_full_pipeline(app_with_fixtures, clean_db, admin_key, viewer_key)
     assert body["extracted"] == 0 and body["failed"] == 0
 
     # ---- 3) backtest ------------------------------------------------------
-    r = client.post(
+    r = await client.post(
         "/backtest",
         json={
             "horizon_days": 5,
@@ -146,7 +146,7 @@ async def test_full_pipeline(app_with_fixtures, clean_db, admin_key, viewer_key)
     assert len(detail["equity_curve"]) >= 1
 
     # ---- 4) read endpoints ------------------------------------------------
-    r = client.get("/signals", headers=viewer)
+    r = await client.get("/signals", headers=viewer)
     assert r.status_code == 200
     signals = r.json()
     assert len(signals["rows"]) == 1
@@ -154,7 +154,7 @@ async def test_full_pipeline(app_with_fixtures, clean_db, admin_key, viewer_key)
     assert row["ticker"] == "AAPL"
     assert row["guidance"] in {"raised", "maintained", "lowered"}
 
-    r = client.get(f"/backtest/{detail['id']}", headers=viewer)
+    r = await client.get(f"/backtest/{detail['id']}", headers=viewer)
     assert r.status_code == 200
     fetched = r.json()
     assert fetched["id"] == detail["id"]
@@ -162,8 +162,8 @@ async def test_full_pipeline(app_with_fixtures, clean_db, admin_key, viewer_key)
 
     # ---- 5) auth enforcement ---------------------------------------------
     # viewer key cannot trigger a backtest
-    r = client.post("/backtest", json={"horizon_days": 5}, headers=viewer)
+    r = await client.post("/backtest", json={"horizon_days": 5}, headers=viewer)
     assert r.status_code == 403
     # missing key
-    r = client.get("/signals")
+    r = await client.get("/signals")
     assert r.status_code == 401
