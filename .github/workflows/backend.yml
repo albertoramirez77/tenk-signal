@@ -68,7 +68,7 @@ jobs:
 
       - name: pip-audit
         working-directory: backend
-        run: uv run pip-audit --strict --ignore-vuln GHSA-0000-0000-0000 || uv run pip-audit --strict
+        run: uv run pip-audit --strict --ignore-vuln GHSA-0000-0000-0000 . || uv run pip-audit --strict .
 
       - name: Build Docker image
         run: docker build -t tenk-signal-backend:ci backend
