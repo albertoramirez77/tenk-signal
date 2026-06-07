@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import os
 import socket
+from collections.abc import AsyncIterator
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -45,6 +46,14 @@ pytestmark = pytest.mark.skipif(
 )
 
 FIXTURES = Path(__file__).parent.parent / "fixtures"
+
+
+@pytest.fixture(autouse=True)
+async def _dispose_db_engine_after_test() -> AsyncIterator[None]:
+    yield
+    from tenk_signal.db import dispose_engine
+
+    await dispose_engine()
 
 
 @pytest.fixture(scope="module")
