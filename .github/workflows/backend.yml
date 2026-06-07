@@ -70,7 +70,7 @@ jobs:
         working-directory: backend
         run: |
           uv run python -m pip freeze | grep -v '^\-e ' | grep -v -i '^tenk\|^tenk_signal' > /tmp/pip_audit_requirements.txt
-          uv run pip-audit --requirement /tmp/pip_audit_requirements.txt --strict
+          uv run pip-audit --requirement /tmp/pip_audit_requirements.txt --no-deps --disable-pip --strict
 
       - name: Build Docker image
         run: docker build -t tenk-signal-backend:ci backend
