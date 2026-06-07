@@ -19,6 +19,9 @@ COPY tenk_signal ./tenk_signal
 COPY alembic ./alembic
 COPY alembic.ini ./alembic.ini
 
+# Ensure the uv-created environment is on PATH so uvicorn and other scripts are available.
+ENV PATH="/app/.venv/bin:$PATH"
+
 EXPOSE 8000
 
 # Render injects $PORT; default 8000 for local docker run.
