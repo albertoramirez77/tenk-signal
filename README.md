@@ -127,9 +127,3 @@ Render env vars: every var from `.env.example`.
 Vercel env vars: `BACKEND_API_URL` and `APP_API_KEY_VIEWER_SERVER`
 (server-side, **no `NEXT_PUBLIC_` prefix**) plus optional
 `NEXT_PUBLIC_SENTRY_DSN`.
-
-## Acknowledgements
-
-Built with [Claude Code](https://claude.com/claude-code). Full development
-history (9 logical commits) lives in the original PR at
-<https://github.com/albertoramirez77/backtest-auditor>.
