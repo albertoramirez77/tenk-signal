@@ -18,7 +18,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import pytest
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 
 
@@ -98,7 +98,8 @@ async def test_full_pipeline(app_with_fixtures, clean_db, admin_key, viewer_key)
     admin = {"X-API-Key": admin_key}
     viewer = {"X-API-Key": viewer_key}
 
-    async with AsyncClient(app=app_with_fixtures, base_url="http://testserver") as client:
+    transport = ASGITransport(app=app_with_fixtures)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
         # ---- 1) ingest the AAPL fixture ---------------------------------------
         r = await client.post(
             "/ingest",
