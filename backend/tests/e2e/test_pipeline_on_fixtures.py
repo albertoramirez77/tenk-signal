@@ -121,59 +121,59 @@ async def test_full_pipeline(app_with_fixtures, clean_db, admin_key, viewer_key)
         assert r2.status_code == 200
         assert r2.json()["filings_skipped_existing"] == 1
 
-    # ---- 2) extract -------------------------------------------------------
-    r = await client.post("/extract", json={"all_pending": True}, headers=admin)
-    assert r.status_code == 200, r.text
-    extract_result = r.json()
-    assert extract_result["extracted"] == 1
-    assert extract_result["cached"] == 0
-    assert extract_result["failed"] == 0
+        # ---- 2) extract -------------------------------------------------------
+        r = await client.post("/extract", json={"all_pending": True}, headers=admin)
+        assert r.status_code == 200, r.text
+        extract_result = r.json()
+        assert extract_result["extracted"] == 1
+        assert extract_result["cached"] == 0
+        assert extract_result["failed"] == 0
 
-    # Second extract: the UNIQUE constraint must turn this into a cache hit.
-    r = await client.post("/extract", json={"all_pending": True}, headers=admin)
-    # all_pending now returns zero filings because every Filing has an
-    # Extraction; the cache constraint isn't exercised here but a re-extract
-    # of the same filing_id is.
-    body = r.json()
-    assert body["extracted"] == 0 and body["failed"] == 0
+        # Second extract: the UNIQUE constraint must turn this into a cache hit.
+        r = await client.post("/extract", json={"all_pending": True}, headers=admin)
+        # all_pending now returns zero filings because every Filing has an
+        # Extraction; the cache constraint isn't exercised here but a re-extract
+        # of the same filing_id is.
+        body = r.json()
+        assert body["extracted"] == 0 and body["failed"] == 0
 
-    # ---- 3) backtest ------------------------------------------------------
-    r = await client.post(
-        "/backtest",
-        json={
-            "horizon_days": 5,
-            "execution_lag_days": 1,
-            "transaction_cost_bps": 5.0,
-            "benchmark": "SPY",
-            "walk_forward": False,
-        },
-        headers=admin,
-    )
-    assert r.status_code == 200, r.text
-    detail = r.json()
-    assert detail["id"] >= 1
-    assert isinstance(detail["equity_curve"], list)
-    assert len(detail["equity_curve"]) >= 1
+        # ---- 3) backtest ------------------------------------------------------
+        r = await client.post(
+            "/backtest",
+            json={
+                "horizon_days": 5,
+                "execution_lag_days": 1,
+                "transaction_cost_bps": 5.0,
+                "benchmark": "SPY",
+                "walk_forward": False,
+            },
+            headers=admin,
+        )
+        assert r.status_code == 200, r.text
+        detail = r.json()
+        assert detail["id"] >= 1
+        assert isinstance(detail["equity_curve"], list)
+        assert len(detail["equity_curve"]) >= 1
 
-    # ---- 4) read endpoints ------------------------------------------------
-    r = await client.get("/signals", headers=viewer)
-    assert r.status_code == 200
-    signals = r.json()
-    assert len(signals["rows"]) == 1
-    row = signals["rows"][0]
-    assert row["ticker"] == "AAPL"
-    assert row["guidance"] in {"raised", "maintained", "lowered"}
+        # ---- 4) read endpoints ------------------------------------------------
+        r = await client.get("/signals", headers=viewer)
+        assert r.status_code == 200
+        signals = r.json()
+        assert len(signals["rows"]) == 1
+        row = signals["rows"][0]
+        assert row["ticker"] == "AAPL"
+        assert row["guidance"] in {"raised", "maintained", "lowered"}
 
-    r = await client.get(f"/backtest/{detail['id']}", headers=viewer)
-    assert r.status_code == 200
-    fetched = r.json()
-    assert fetched["id"] == detail["id"]
-    assert len(fetched["equity_curve"]) == len(detail["equity_curve"])
+        r = await client.get(f"/backtest/{detail['id']}", headers=viewer)
+        assert r.status_code == 200
+        fetched = r.json()
+        assert fetched["id"] == detail["id"]
+        assert len(fetched["equity_curve"]) == len(detail["equity_curve"])
 
-    # ---- 5) auth enforcement ---------------------------------------------
-    # viewer key cannot trigger a backtest
-    r = await client.post("/backtest", json={"horizon_days": 5}, headers=viewer)
-    assert r.status_code == 403
-    # missing key
-    r = await client.get("/signals")
-    assert r.status_code == 401
+        # ---- 5) auth enforcement ---------------------------------------------
+        # viewer key cannot trigger a backtest
+        r = await client.post("/backtest", json={"horizon_days": 5}, headers=viewer)
+        assert r.status_code == 403
+        # missing key
+        r = await client.get("/signals")
+        assert r.status_code == 401
