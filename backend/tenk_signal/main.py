@@ -50,7 +50,10 @@ def create_app() -> FastAPI:
     app.include_router(evals.router)
 
     init_prometheus(app)  # mounts /metrics
-    app.add_event_handler("shutdown", dispose_engine)
+
+    @app.on_event("shutdown")
+    async def _shutdown() -> None:
+        await dispose_engine()
 
     return app
 
