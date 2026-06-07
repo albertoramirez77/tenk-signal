@@ -36,7 +36,7 @@ jobs:
       APP_API_KEY_VIEWER: ci-viewer-key-must-be-long-enough-to-pass-validation
       PROMPT_VERSION: v1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
